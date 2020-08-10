@@ -89,7 +89,7 @@ commands:
             - ~/.hunter/_Base/Cache
       - run:
           name: "Build <<parameters.configuration_name>> (<<parameters.build_type>>)"
-          command: cmake --build ~/build --target <<parameters.target>> -- -j12
+          command: cmake --build ~/build --target <<parameters.target>> -- -j6
 
   test:
     description: "Test"
@@ -323,7 +323,7 @@ jobs:
           destination: coverage
       - upload_coverage_data
 
-  sanitizers:
+  sanitizers-clang:
     executor: linux-clang-latest
     environment:
       UBSAN_OPTIONS: halt_on_error=1
@@ -336,6 +336,24 @@ jobs:
       - benchmark:
           min_time: "0.01"
       - spectest
+
+  sanitizers-gcc:
+    executor: linux-gcc-latest
+    environment:
+      BUILD_TYPE: RelWithDebInfo
+      CMAKE_OPTIONS: -DENABLE_ASSERTIONS=ON -DSANITIZE=address,pointer-compare,pointer-subtract,leak,undefined
+      ASAN_OPTIONS: detect_invalid_pointer_pairs=2
+      UBSAN_OPTIONS: halt_on_error=1
+    steps:
+      - checkout
+      - build
+      - test
+      - benchmark:
+          min_time: "0.01"
+      - spectest:
+          expected_passed: 5589
+          expected_failed: 9
+          expected_skipped: 6215
 
   sanitizers-macos:
     executor: macos
@@ -477,7 +495,8 @@ workflows:
             - sanitizers-macos
       - coverage-gcc
       - coverage-clang
-      - sanitizers
+      - sanitizers-clang
+      - sanitizers-gcc
       - sanitizers-macos
       - fuzzing
       - spectest:
