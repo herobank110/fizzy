@@ -476,8 +476,8 @@ TEST(execute_call, call_max_depth)
     const auto module = parse(bin);
     auto instance = instantiate(module);
 
-    EXPECT_THAT(execute(*instance, 0, {}, 2048), Result(42));
-    EXPECT_THAT(execute(*instance, 1, {}, 2048), Traps());
+    EXPECT_THAT(execute(*instance, 0, {}, 512), Result(42));
+    EXPECT_THAT(execute(*instance, 1, {}, 512), Traps());
 }
 
 // A regression test for incorrect number of arguments passed to a call.
