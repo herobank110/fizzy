@@ -532,8 +532,6 @@ Module parse(bytes_view input)
         case ExternalKind::Global:
             module.imported_global_types.emplace_back(import.desc.global);
             break;
-        default:
-            assert(false);
         }
     }
 
@@ -635,8 +633,6 @@ Module parse(bytes_view input)
             if (export_.index >= total_global_count)
                 throw validation_error{"invalid index of an exported global"};
             break;
-        default:
-            assert(false);
         }
         if (!export_names.emplace(export_.name).second)
             throw validation_error{"duplicate export name " + export_.name};
