@@ -102,7 +102,11 @@ public:
 
         constexpr Iterator begin() const { return m_begin; }
         constexpr Iterator end() const { return m_end; }
-        constexpr size_t size() const { return static_cast<size_t>(m_end - m_begin); }
+
+        [[gnu::no_sanitize("pointer-subtract")]] constexpr size_t size() const
+        {
+            return static_cast<size_t>(m_end - m_begin);
+        }
     };
 
     // The list of positive floating-point values without zero, infinity and NaNs.
