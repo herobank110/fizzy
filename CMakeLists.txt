@@ -64,6 +64,10 @@ if(WEVERYTHING)
     )
 endif()
 
+if(CABLE_COMPILER_CLANG)
+    add_compile_options(-Wno-unknown-attributes)
+endif()
+
 # An option to enable assertions in non-Debug build types.
 # Disabling assertions in Debug build type has no effect (assertions are still enabled).
 option(ENABLE_ASSERTIONS "Enable NDEBUG based assertions" OFF)
