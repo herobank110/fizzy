@@ -326,13 +326,15 @@ jobs:
   sanitizers-clang:
     executor: linux-clang-latest
     environment:
+      # TODO: Enable detect_stack_use_after_return=1 when https://bugs.llvm.org/show_bug.cgi?id=47626 is fixed.
       ASAN_OPTIONS: detect_invalid_pointer_pairs=2
       UBSAN_OPTIONS: halt_on_error=1
     steps:
       - checkout
       - build:
           build_type: RelWithDebInfo
-          cmake_options: -DENABLE_ASSERTIONS=ON -DSANITIZE=address,pointer-compare,pointer-subtract,undefined,nullability,implicit-unsigned-integer-truncation,implicit-signed-integer-truncation
+          # TODO: pointer-compare produces failure in std::string operator+.
+          cmake_options: -DENABLE_ASSERTIONS=ON -DSANITIZE=address,pointer-subtract,undefined,nullability,implicit-unsigned-integer-truncation,implicit-signed-integer-truncation
       - test
       - benchmark:
           min_time: "0.01"
@@ -341,6 +343,7 @@ jobs:
   sanitizers-gcc:
     executor: linux-gcc-latest
     environment:
+      # TODO: Enable detect_stack_use_after_return=1 when https://bugs.llvm.org/show_bug.cgi?id=47626 is fixed.
       ASAN_OPTIONS: detect_invalid_pointer_pairs=2
       UBSAN_OPTIONS: halt_on_error=1
     steps:
