@@ -326,12 +326,13 @@ jobs:
   sanitizers-clang:
     executor: linux-clang-latest
     environment:
+      ASAN_OPTIONS: detect_invalid_pointer_pairs=2
       UBSAN_OPTIONS: halt_on_error=1
     steps:
       - checkout
       - build:
           build_type: RelWithDebInfo
-          cmake_options: -DENABLE_ASSERTIONS=ON -DSANITIZE=address,undefined,nullability,implicit-unsigned-integer-truncation,implicit-signed-integer-truncation
+          cmake_options: -DENABLE_ASSERTIONS=ON -DSANITIZE=address,pointer-compare,pointer-subtract,undefined,nullability,implicit-unsigned-integer-truncation,implicit-signed-integer-truncation
       - test
       - benchmark:
           min_time: "0.01"
@@ -340,13 +341,13 @@ jobs:
   sanitizers-gcc:
     executor: linux-gcc-latest
     environment:
-      BUILD_TYPE: RelWithDebInfo
-      CMAKE_OPTIONS: -DENABLE_ASSERTIONS=ON -DSANITIZE=address,pointer-compare,pointer-subtract,leak,undefined
       ASAN_OPTIONS: detect_invalid_pointer_pairs=2
       UBSAN_OPTIONS: halt_on_error=1
     steps:
       - checkout
-      - build
+      - build:
+          build_type: RelWithDebInfo
+          cmake_options: -DENABLE_ASSERTIONS=ON -DSANITIZE=address,pointer-compare,pointer-subtract,leak,undefined
       - test
       - benchmark:
           min_time: "0.01"
