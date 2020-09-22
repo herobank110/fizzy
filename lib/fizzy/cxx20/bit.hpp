@@ -4,6 +4,18 @@
 
 #pragma once
 
+#if __cplusplus > 201703L
+
+#include <bit>
+
+namespace fizzy
+{
+template <typename To, class From>
+using bit_cast = std::bit_cast<To, From>;
+}
+
+#else
+
 #include <type_traits>
 
 namespace fizzy
@@ -24,3 +36,5 @@ template <class To, class From>
     return dst;
 }
 }  // namespace fizzy
+
+#endif /* __cplusplus > 201703L */
