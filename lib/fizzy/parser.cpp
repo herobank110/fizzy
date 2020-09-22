@@ -410,7 +410,7 @@ inline parser_result<Data> parse(const uint8_t* pos, const uint8_t* end)
     MemIdx memory_index;
     std::tie(memory_index, pos) = leb128u_decode<uint32_t>(pos, end);
     if (memory_index != 0)
-        throw parser_error{"unexpected memidx value " + std::to_string(memory_index)};
+        throw validation_error{"unexpected memidx value " + std::to_string(memory_index)};
 
     ConstantExpression offset;
     // Offset expression is required to have i32 result value
