@@ -409,8 +409,14 @@ inline parser_result<Data> parse(const uint8_t* pos, const uint8_t* end)
 {
     MemIdx memory_index;
     std::tie(memory_index, pos) = leb128u_decode<uint32_t>(pos, end);
+
+    // TODO: The check should be memory_index < num_of_memories (0 or 1),
+    //       but access to the memory section of the module is needed.
     if (memory_index != 0)
-        throw validation_error{"unexpected memidx value " + std::to_string(memory_index)};
+    {
+        throw validation_error{
+            "invalid memory index " + std::to_string(memory_index) + " (only memory 0 is allowed)"};
+    }
 
     ConstantExpression offset;
     // Offset expression is required to have i32 result value
@@ -559,7 +565,10 @@ Module parse(bytes_view input)
     }
 
     if (!module.datasec.empty() && !module.has_memory())
-        throw validation_error{"data section encountered without a memory section"};
+    {
+        throw validation_error{
+            "invalid memory index 0 (data section encountered without a memory section)"};
+    }
 
     for (const auto& data : module.datasec)
     {
