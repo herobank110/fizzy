@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "execute.hpp"
+#include "cxx20/numeric.hpp"
 #include "stack.hpp"
 #include "trunc_boundaries.hpp"
 #include "types.hpp"
@@ -327,7 +328,7 @@ inline uint32_t ctz32(uint32_t value) noexcept
 
 inline uint32_t popcnt32(uint32_t value) noexcept
 {
-    return static_cast<uint32_t>(__builtin_popcount(value));
+    return static_cast<uint32_t>(popcount(value));
 }
 
 inline uint64_t clz64(uint64_t value) noexcept
@@ -348,7 +349,7 @@ inline uint64_t ctz64(uint64_t value) noexcept
 
 inline uint64_t popcnt64(uint64_t value) noexcept
 {
-    return static_cast<uint64_t>(__builtin_popcountll(value));
+    return static_cast<uint64_t>(popcount(value));
 }
 
 template <typename T>
