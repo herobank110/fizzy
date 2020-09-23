@@ -431,6 +431,8 @@ jobs:
   fuzzing:
     executor: linux-clang-latest
     environment:
+      # TODO: Enable detect_stack_use_after_return=1 when https://bugs.llvm.org/show_bug.cgi?id=47626 is fixed.
+      ASAN_OPTIONS: detect_invalid_pointer_pairs=2
       UBSAN_OPTIONS: halt_on_error=1
     steps:
       - checkout
