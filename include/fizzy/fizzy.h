@@ -47,7 +47,7 @@ typedef struct FizzyExecutionResult
 /// @param args_size   Size of the  argument array.
 /// @param depth        Call stack depth.
 typedef struct FizzyExecutionResult (*FizzyExternalFn)(void* context,
-    struct FizzyInstance* instance, const union FizzyValue* args, uint32_t args_size, int depth);
+    struct FizzyInstance* instance, const union FizzyValue* args, size_t args_size, int depth);
 
 /// External function.
 typedef struct FizzyExternalFunction
@@ -78,7 +78,7 @@ void fizzy_free_module(struct FizzyModule* module);
 /// @param imported_functions       Pointer to the imported function array.
 /// @param imported_functions_size  Size of the imported function array.
 struct FizzyInstance* fizzy_instantiate(struct FizzyModule* module,
-    const struct FizzyExternalFunction* imported_functions, uint32_t imported_functions_size);
+    const struct FizzyExternalFunction* imported_functions, size_t imported_functions_size);
 
 /// Free resources associated with the instance.
 void fizzy_free_instance(struct FizzyInstance* instance);
@@ -90,7 +90,7 @@ void fizzy_free_instance(struct FizzyInstance* instance);
 /// @param args_size    Size of the argument array.
 /// @param depth        Call stack depth.
 FizzyExecutionResult fizzy_execute(struct FizzyInstance* instance, uint32_t func_idx,
-    const union FizzyValue* args, uint32_t args_size, int depth);
+    const union FizzyValue* args, size_t args_size, int depth);
 
 #ifdef __cplusplus
 }

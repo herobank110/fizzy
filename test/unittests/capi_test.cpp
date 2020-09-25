@@ -54,7 +54,7 @@ TEST(capi, instantiate_imported_function)
     EXPECT_NE(module, nullptr);
 
     FizzyExternalFunction host_funcs[] = {
-        {[](void*, FizzyInstance*, const FizzyValue*, uint32_t, int) {
+        {[](void*, FizzyInstance*, const FizzyValue*, size_t, int) {
              return FizzyExecutionResult{false, true, {42}};
          },
             nullptr}};
@@ -107,11 +107,11 @@ TEST(capi, execute_with_host_function)
     EXPECT_NE(module, nullptr);
 
     FizzyExternalFunction host_funcs[] = {
-        {[](void*, FizzyInstance*, const FizzyValue*, uint32_t, int) {
+        {[](void*, FizzyInstance*, const FizzyValue*, size_t, int) {
              return FizzyExecutionResult{false, true, {42}};
          },
             nullptr},
-        {[](void*, FizzyInstance*, const FizzyValue* args, uint32_t, int) {
+        {[](void*, FizzyInstance*, const FizzyValue* args, size_t, int) {
              return FizzyExecutionResult{false, true, {args[0].i64 / args[1].i64}};
          },
             nullptr}};
@@ -141,7 +141,7 @@ TEST(capi, imported_function_traps)
     EXPECT_NE(module, nullptr);
 
     FizzyExternalFunction host_funcs[] = {
-        {[](void*, FizzyInstance*, const FizzyValue*, uint32_t, int) {
+        {[](void*, FizzyInstance*, const FizzyValue*, size_t, int) {
              return FizzyExecutionResult{true, false, {}};
          },
             nullptr}};
@@ -169,7 +169,7 @@ TEST(capi, imported_function_void)
 
     bool called = false;
     FizzyExternalFunction host_funcs[] = {
-        {[](void* context, FizzyInstance*, const FizzyValue*, uint32_t, int) {
+        {[](void* context, FizzyInstance*, const FizzyValue*, size_t, int) {
              *static_cast<bool*>(context) = true;
              return FizzyExecutionResult{false, false, {}};
          },
@@ -221,7 +221,7 @@ TEST(capi, imported_function_from_another_module)
 
     // TODO fizzy_find_exported_function
 
-    auto sub = [](void* context, FizzyInstance*, const FizzyValue* args, uint32_t args_size,
+    auto sub = [](void* context, FizzyInstance*, const FizzyValue* args, size_t args_size,
                    int depth) -> FizzyExecutionResult {
         auto* called_instance = static_cast<FizzyInstance*>(context);
         return fizzy_execute(called_instance, 0, args, args_size, depth + 1);

@@ -67,7 +67,7 @@ void fizzy_free_module(FizzyModule* module)
 }
 
 FizzyInstance* fizzy_instantiate(FizzyModule* module,
-    const FizzyExternalFunction* imported_functions, uint32_t imported_functions_size)
+    const FizzyExternalFunction* imported_functions, size_t imported_functions_size)
 {
     try
     {
@@ -116,7 +116,7 @@ void fizzy_free_instance(FizzyInstance* instance)
 }
 
 FizzyExecutionResult fizzy_execute(FizzyInstance* instance, uint32_t func_idx,
-    const FizzyValue* cargs, uint32_t args_size, int depth)
+    const FizzyValue* cargs, size_t args_size, int depth)
 {
     const auto args = reinterpret_cast<const fizzy::Value*>(cargs);
 

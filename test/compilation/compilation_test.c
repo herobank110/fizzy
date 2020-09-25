@@ -8,7 +8,7 @@ bool validate(const uint8_t* binary, size_t size);
 bool parse(const uint8_t* binary, size_t size);
 bool instantiate(const uint8_t* binary, size_t size);
 struct FizzyExecutionResult dummy_host_func(void* context, struct FizzyInstance* instance,
-    const union FizzyValue* args, uint32_t args_size, int depth);
+    const union FizzyValue* args, size_t args_size, int depth);
 bool instantiate_with_host_func(const uint8_t* binary, size_t size);
 bool execute(const uint8_t* binary, size_t size);
 
@@ -42,7 +42,7 @@ bool instantiate(const uint8_t* binary, size_t size)
 }
 
 struct FizzyExecutionResult dummy_host_func(void* context, struct FizzyInstance* instance,
-    const union FizzyValue* args, uint32_t args_size, int depth)
+    const union FizzyValue* args, size_t args_size, int depth)
 {
     (void)context;
     (void)instance;
