@@ -90,12 +90,11 @@ inline bool invoke_function(const FuncType& func_type, uint32_t func_idx, Instan
     if (ret.trapped)
         return false;
 
-    const auto num_outputs = func_type.outputs.size();
     // NOTE: we can assume these two from validation
-    assert(num_outputs <= 1);
-    assert(ret.has_value == (num_outputs == 1));
+    assert(func_type.outputs.size() <= 1);
+    assert(ret.has_value == !func_type.outputs.empty());
     // Push back the result
-    if (num_outputs != 0)
+    if (ret.has_value != 0)
         stack.push(ret.value);
 
     return true;
