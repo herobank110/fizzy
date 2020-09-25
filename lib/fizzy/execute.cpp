@@ -80,10 +80,25 @@ bool invoke_function(const FuncType& func_type, const F& func, Instance& instanc
 inline bool invoke_function(const FuncType& func_type, uint32_t func_idx, Instance& instance,
     OperandStack& stack, int depth) noexcept
 {
-    const auto func = [func_idx](Instance& _instance, span<const Value> args, int _depth) noexcept {
-        return execute(_instance, func_idx, args, _depth);
-    };
-    return invoke_function(func_type, func, instance, stack, depth);
+    const auto num_args = func_type.inputs.size();
+    assert(stack.size() >= num_args);
+    span<const Value> call_args{stack.rend() - num_args, num_args};
+    stack.drop(num_args);
+
+    const auto ret = execute(instance, func_idx, call_args, depth + 1);
+    // Bubble up traps
+    if (ret.trapped)
+        return false;
+
+    const auto num_outputs = func_type.outputs.size();
+    // NOTE: we can assume these two from validation
+    assert(num_outputs <= 1);
+    assert(ret.has_value == (num_outputs == 1));
+    // Push back the result
+    if (num_outputs != 0)
+        stack.push(ret.value);
+
+    return true;
 }
 
 template <typename T>
