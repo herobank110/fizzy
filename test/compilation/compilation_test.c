@@ -59,7 +59,7 @@ bool instantiate_with_host_func(const uint8_t* binary, size_t size)
     if (!module)
         return false;
 
-    FizzyExternalFunction host_funcs[] = {{dummy_host_func, NULL}};
+    FizzyExternalFunction host_funcs[] = {{{NULL, 0, NULL, 0}, dummy_host_func, NULL}};
 
     struct FizzyInstance* instance = fizzy_instantiate(module, host_funcs, 1);
     if (!instance)

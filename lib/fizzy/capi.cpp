@@ -11,6 +11,36 @@
 
 namespace
 {
+inline fizzy::ValType unwrap(FizzyValueType value_type) noexcept
+{
+    switch (value_type)
+    {
+    case FizzyValueTypeI32:
+        return fizzy::ValType::i32;
+    case FizzyValueTypeI64:
+        return fizzy::ValType::i64;
+    case FizzyValueTypeF32:
+        return fizzy::ValType::f32;
+    case FizzyValueTypeF64:
+        return fizzy::ValType::f64;
+    }
+    __builtin_unreachable();
+}
+
+inline fizzy::FuncType unwrap(const FizzyFunctionType& type)
+{
+    fizzy::FuncType func_type{std::vector<fizzy::ValType>(type.inputs_size),
+        std::vector<fizzy::ValType>(type.outputs_size)};
+
+    fizzy::ValType (*unwrap_valtype_fn)(FizzyValueType value) = &unwrap;
+    std::transform(
+        type.inputs, type.inputs + type.inputs_size, func_type.inputs.begin(), unwrap_valtype_fn);
+    std::transform(type.outputs, type.outputs + type.outputs_size, func_type.outputs.begin(),
+        unwrap_valtype_fn);
+
+    return func_type;
+}
+
 inline FizzyValue wrap(fizzy::Value value) noexcept
 {
     return fizzy::bit_cast<FizzyValue>(value);
@@ -64,6 +94,12 @@ inline auto unwrap(FizzyExternalFn func, void* context) noexcept
         return unwrap(result);
     };
 }
+
+inline fizzy::ExternalFunction unwrap(const FizzyExternalFunction& external_func)
+{
+    return fizzy::ExternalFunction{
+        unwrap(external_func.function, external_func.context), unwrap(external_func.type)};
+}
 }  // namespace
 
 extern "C" {
@@ -114,20 +150,10 @@ FizzyInstance* fizzy_instantiate(FizzyModule* module,
 {
     try
     {
-        // Convert fizzy_external_function to fizzy::ExternalFunction
         std::vector<fizzy::ExternalFunction> functions(imported_functions_size);
-        for (size_t imported_func_idx = 0; imported_func_idx < imported_functions_size;
-             ++imported_func_idx)
-        {
-            const auto& cfunc = imported_functions[imported_func_idx];
-
-            auto func = unwrap(cfunc.function, cfunc.context);
-            // TODO get type from input array
-            auto func_type = module->module.imported_function_types[imported_func_idx];
-
-            functions[imported_func_idx] =
-                fizzy::ExternalFunction{std::move(func), std::move(func_type)};
-        }
+        fizzy::ExternalFunction (*unwrap_external_func_fn)(const FizzyExternalFunction&) = &unwrap;
+        std::transform(imported_functions, imported_functions + imported_functions_size,
+            functions.begin(), unwrap_external_func_fn);
 
         auto instance = fizzy::instantiate(std::move(module->module), std::move(functions));
 
