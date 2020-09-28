@@ -11,6 +11,26 @@
 
 namespace
 {
+inline FizzyValue wrap(fizzy::Value value) noexcept
+{
+    return fizzy::bit_cast<FizzyValue>(value);
+}
+
+inline fizzy::Value unwrap(FizzyValue value) noexcept
+{
+    return fizzy::bit_cast<fizzy::Value>(value);
+}
+
+inline const FizzyValue* wrap(const fizzy::Value* values) noexcept
+{
+    return reinterpret_cast<const FizzyValue*>(values);
+}
+
+inline const fizzy::Value* unwrap(const FizzyValue* values) noexcept
+{
+    return reinterpret_cast<const fizzy::Value*>(values);
+}
+
 inline FizzyInstance* wrap(fizzy::Instance* instance) noexcept
 {
     return reinterpret_cast<FizzyInstance*>(instance);
@@ -21,6 +41,29 @@ inline fizzy::Instance* unwrap(FizzyInstance* instance) noexcept
     return reinterpret_cast<fizzy::Instance*>(instance);
 }
 
+inline FizzyExecutionResult wrap(const fizzy::ExecutionResult& result) noexcept
+{
+    return {result.trapped, result.has_value, wrap(result.value)};
+}
+
+inline fizzy::ExecutionResult unwrap(FizzyExecutionResult result) noexcept
+{
+    if (result.trapped)
+        return fizzy::Trap;
+    else if (!result.has_value)
+        return fizzy::Void;
+    else
+        return unwrap(result.value);
+}
+
+inline auto unwrap(FizzyExternalFn func, void* context) noexcept
+{
+    return [func, context](fizzy::Instance& instance, fizzy::span<const fizzy::Value> args,
+               int depth) noexcept -> fizzy::ExecutionResult {
+        const auto result = func(context, wrap(&instance), wrap(args.data()), args.size(), depth);
+        return unwrap(result);
+    };
+}
 }  // namespace
 
 extern "C" {
@@ -76,21 +119,9 @@ FizzyInstance* fizzy_instantiate(FizzyModule* module,
         for (size_t imported_func_idx = 0; imported_func_idx < imported_functions_size;
              ++imported_func_idx)
         {
-            auto func = [cfunc = imported_functions[imported_func_idx]](fizzy::Instance& instance,
-                            fizzy::span<const fizzy::Value> args,
-                            int depth) -> fizzy::ExecutionResult {
-                const auto cres = cfunc.function(cfunc.context, wrap(&instance),
-                    reinterpret_cast<const FizzyValue*>(args.data()),
-                    static_cast<uint32_t>(args.size()), depth);
+            const auto& cfunc = imported_functions[imported_func_idx];
 
-                if (cres.trapped)
-                    return fizzy::Trap;
-                else if (!cres.has_value)
-                    return fizzy::Void;
-                else
-                    return fizzy::bit_cast<fizzy::Value>(cres.value);
-            };
-
+            auto func = unwrap(cfunc.function, cfunc.context);
             // TODO get type from input array
             auto func_type = module->module.imported_function_types[imported_func_idx];
 
@@ -115,14 +146,11 @@ void fizzy_free_instance(FizzyInstance* instance)
     delete unwrap(instance);
 }
 
-FizzyExecutionResult fizzy_execute(FizzyInstance* instance, uint32_t func_idx,
-    const FizzyValue* cargs, size_t args_size, int depth)
+FizzyExecutionResult fizzy_execute(
+    FizzyInstance* instance, uint32_t func_idx, const FizzyValue* args, size_t args_size, int depth)
 {
-    const auto args = reinterpret_cast<const fizzy::Value*>(cargs);
-
-    const auto result = fizzy::execute(
-        *unwrap(instance), func_idx, fizzy::span<const fizzy::Value>(args, args_size), depth);
-
-    return {result.trapped, result.has_value, fizzy::bit_cast<FizzyValue>(result.value)};
+    const auto result =
+        fizzy::execute(*unwrap(instance), func_idx, {unwrap(args), args_size}, depth);
+    return wrap(result);
 }
 }
