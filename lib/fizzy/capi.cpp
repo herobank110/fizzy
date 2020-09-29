@@ -9,6 +9,20 @@
 #include <fizzy/fizzy.h>
 #include <memory>
 
+namespace
+{
+inline FizzyInstance* wrap(fizzy::Instance* instance) noexcept
+{
+    return reinterpret_cast<FizzyInstance*>(instance);
+}
+
+inline fizzy::Instance* unwrap(FizzyInstance* instance) noexcept
+{
+    return reinterpret_cast<fizzy::Instance*>(instance);
+}
+
+}  // namespace
+
 extern "C" {
 struct FizzyModule
 {
@@ -65,8 +79,7 @@ FizzyInstance* fizzy_instantiate(FizzyModule* module,
             auto func = [cfunc = imported_functions[imported_func_idx]](fizzy::Instance& instance,
                             fizzy::span<const fizzy::Value> args,
                             int depth) -> fizzy::ExecutionResult {
-                FizzyInstance cinstance{&instance};
-                const auto cres = cfunc.function(cfunc.context, &cinstance,
+                const auto cres = cfunc.function(cfunc.context, wrap(&instance),
                     reinterpret_cast<const FizzyValue*>(args.data()),
                     static_cast<uint32_t>(args.size()), depth);
 
@@ -87,11 +100,8 @@ FizzyInstance* fizzy_instantiate(FizzyModule* module,
 
         auto instance = fizzy::instantiate(std::move(module->module), std::move(functions));
 
-        auto cinstance = std::make_unique<FizzyInstance>();
-        cinstance->instance = instance.release();
-
         fizzy_free_module(module);
-        return cinstance.release();
+        return wrap(instance.release());
     }
     catch (...)
     {
@@ -102,8 +112,7 @@ FizzyInstance* fizzy_instantiate(FizzyModule* module,
 
 void fizzy_free_instance(FizzyInstance* instance)
 {
-    delete instance->instance;
-    delete instance;
+    delete unwrap(instance);
 }
 
 FizzyExecutionResult fizzy_execute(FizzyInstance* instance, uint32_t func_idx,
@@ -112,7 +121,7 @@ FizzyExecutionResult fizzy_execute(FizzyInstance* instance, uint32_t func_idx,
     const auto args = reinterpret_cast<const fizzy::Value*>(cargs);
 
     const auto result = fizzy::execute(
-        *instance->instance, func_idx, fizzy::span<const fizzy::Value>(args, args_size), depth);
+        *unwrap(instance), func_idx, fizzy::span<const fizzy::Value>(args, args_size), depth);
 
     return {result.trapped, result.has_value, fizzy::bit_cast<FizzyValue>(result.value)};
 }
