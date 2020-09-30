@@ -93,6 +93,13 @@ struct FizzyModule* fizzy_parse(const uint8_t* wasm_binary, size_t wasm_binary_s
 /// Should be called only unless @p module was passed to fizzy_instantiate.
 void fizzy_free_module(struct FizzyModule* module);
 
+/// Get type of the function defined in the module.
+///
+/// @param module   Pointer to module.
+/// @param func_idx Function index. Can be index of an imported function.
+struct FizzyFunctionType fizzy_get_function_type(
+    const struct FizzyModule* module, uint32_t func_idx);
+
 /// Instantiate a module.
 /// Takes ownership of module, i.e. @p module is invalidated after this call.
 ///
