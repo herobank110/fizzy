@@ -255,12 +255,12 @@ jobs:
           name: "Check cmake lint"
           command: |
             export PATH=$PATH:~/.local/bin
-            find . -name 'CMakeLists.txt' -o -wholename './cmake/Project*.cmake' | xargs cmake-lint
+            git ls-files 'CMakeLists.txt' '*/CMakeLists.txt' './cmake/Project*.cmake' | xargs cmake-lint
       - run:
           name: "Check cmake format"
           command: |
             export PATH=$PATH:~/.local/bin
-            find . -name 'CMakeLists.txt' -o -wholename './cmake/Project*.cmake' | xargs cmake-format
+            git ls-files 'CMakeLists.txt' '*/CMakeLists.txt' './cmake/Project*.cmake' | xargs cmake-format
       - run:
           name: "Check code format"
           command: |
