@@ -10,10 +10,13 @@
 
 namespace fizzy
 {
-template <class T>
-constexpr int popcount(T x) noexcept
+constexpr int popcount(uint32_t x) noexcept
 {
-    static_assert(sizeof(x) == sizeof(unsigned int) || sizeof(x) == sizeof(unsigned long long));
+    return std::popcount(x);
+}
+
+constexpr int popcount(uint64_t x) noexcept
+{
     return std::popcount(x);
 }
 }  // namespace fizzy
