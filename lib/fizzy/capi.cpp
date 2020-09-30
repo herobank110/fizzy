@@ -13,18 +13,7 @@ namespace
 {
 inline fizzy::ValType unwrap(FizzyValueType value_type) noexcept
 {
-    switch (value_type)
-    {
-    case FizzyValueTypeI32:
-        return fizzy::ValType::i32;
-    case FizzyValueTypeI64:
-        return fizzy::ValType::i64;
-    case FizzyValueTypeF32:
-        return fizzy::ValType::f32;
-    case FizzyValueTypeF64:
-        return fizzy::ValType::f64;
-    }
-    __builtin_unreachable();
+    return static_cast<fizzy::ValType>(static_cast<uint8_t>(value_type));
 }
 
 inline fizzy::FuncType unwrap(const FizzyFunctionType& type)
