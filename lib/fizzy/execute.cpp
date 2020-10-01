@@ -66,12 +66,8 @@ bool invoke_function(const FuncType& func_type, const F& func, Instance& instanc
     if (ret.trapped)
         return false;
 
-    const auto num_outputs = func_type.outputs.size();
-    // NOTE: we can assume these two from validation
-    assert(num_outputs <= 1);
-    assert(ret.has_value == (num_outputs == 1));
     // Push back the result
-    if (num_outputs != 0)
+    if (ret.has_value)
         stack.push(ret.value);
 
     return true;
