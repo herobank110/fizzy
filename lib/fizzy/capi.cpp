@@ -109,6 +109,17 @@ void fizzy_free_module(FizzyModule* module)
     delete module;
 }
 
+bool fizzy_find_exported_function(
+    const struct FizzyModule* module, const char* name, uint32_t* out_func_idx)
+{
+    const auto optional_func_idx = fizzy::find_exported_function(module->module, name);
+    if (!optional_func_idx)
+        return false;
+
+    *out_func_idx = *optional_func_idx;
+    return true;
+}
+
 FizzyInstance* fizzy_instantiate(FizzyModule* module,
     const FizzyExternalFunction* imported_functions, size_t imported_functions_size)
 {
