@@ -53,10 +53,9 @@ void branch(const Code& code, OperandStack& stack, const Instr*& pc, const uint8
 }
 
 template <class F>
-bool invoke_function(const FuncType& func_type, const F& func, Instance& instance,
-    OperandStack& stack, int depth) noexcept
+bool invoke_function(
+    size_t num_args, const F& func, Instance& instance, OperandStack& stack, int depth) noexcept
 {
-    const auto num_args = func_type.inputs.size();
     assert(stack.size() >= num_args);
     span<const Value> call_args{stack.rend() - num_args, num_args};
     stack.drop(num_args);
@@ -73,13 +72,13 @@ bool invoke_function(const FuncType& func_type, const F& func, Instance& instanc
     return true;
 }
 
-inline bool invoke_function(const FuncType& func_type, uint32_t func_idx, Instance& instance,
-    OperandStack& stack, int depth) noexcept
+inline bool invoke_function(
+    size_t num_args, uint32_t func_idx, Instance& instance, OperandStack& stack, int depth) noexcept
 {
     const auto func = [func_idx](Instance& _instance, span<const Value> args, int _depth) noexcept {
         return execute(_instance, func_idx, args, _depth);
     };
-    return invoke_function(func_type, func, instance, stack, depth);
+    return invoke_function(num_args, func, instance, stack, depth);
 }
 
 template <typename T>
@@ -556,9 +555,10 @@ ExecutionResult execute(
         case Instr::call:
         {
             const auto called_func_idx = read<uint32_t>(immediates);
-            const auto& called_func_type = instance.module.get_function_type(called_func_idx);
+            const auto called_func_num_args =
+                instance.module.get_function_type(called_func_idx).inputs.size();
 
-            if (!invoke_function(called_func_type, called_func_idx, instance, stack, depth))
+            if (!invoke_function(called_func_num_args, called_func_idx, instance, stack, depth))
                 goto trap;
             break;
         }
@@ -583,7 +583,8 @@ ExecutionResult execute(
             if (expected_type != actual_type)
                 goto trap;
 
-            if (!invoke_function(actual_type, called_func->function, instance, stack, depth))
+            if (!invoke_function(
+                    actual_type.inputs.size(), called_func->function, instance, stack, depth))
                 goto trap;
             break;
         }
