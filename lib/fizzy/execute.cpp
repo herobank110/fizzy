@@ -58,16 +58,14 @@ inline bool invoke_function(
 {
     assert(stack.size() >= num_args);
     span<const Value> call_args{stack.rend() - num_args, num_args};
-    stack.drop(num_args);
 
     const auto ret = func(instance, call_args, depth + 1);
-    // Bubble up traps
     if (ret.trapped)
-        return false;
+        return false;  // Bubble up traps
 
-    // Push back the result
+    stack.drop(num_args);
     if (ret.has_value)
-        stack.push(ret.value);
+        stack.push(ret.value);  // Push back the result
 
     return true;
 }
