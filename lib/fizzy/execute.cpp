@@ -53,7 +53,7 @@ void branch(const Code& code, OperandStack& stack, const Instr*& pc, const uint8
 }
 
 template <class F>
-bool invoke_function(
+inline bool invoke_function(
     size_t num_args, const F& func, Instance& instance, OperandStack& stack, int depth) noexcept
 {
     assert(stack.size() >= num_args);
