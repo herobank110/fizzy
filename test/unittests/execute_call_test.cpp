@@ -503,19 +503,18 @@ TEST(execute_call, call_nonempty_stack)
     EXPECT_THAT(execute(*instance, 1, {}), Result(3));
 }
 
+constexpr int MaxDepth = 2048;
+
 TEST(execute_call, call_imported_infinite_recursion)
 {
     /* wat2wasm
     (import "mod" "foo" (func (result i32)))
-    (func (result i32)
-      call 0
-    )
     */
-    const auto wasm = from_hex(
-        "0061736d010000000105016000017f020b01036d6f6403666f6f0000030201000a0601040010000b");
+    const auto wasm = from_hex("0061736d010000000105016000017f020b01036d6f6403666f6f0000");
 
     const auto module = parse(wasm);
     auto host_foo = [](Instance& instance, span<const Value>, int depth) -> ExecutionResult {
+        EXPECT_LE(depth, MaxDepth);
         return execute(instance, 0, {}, depth + 1);
     };
     const auto host_foo_type = module.typesec[0];
@@ -523,6 +522,26 @@ TEST(execute_call, call_imported_infinite_recursion)
     auto instance = instantiate(module, {{host_foo, host_foo_type}});
 
     EXPECT_THAT(execute(*instance, 0, {}), Traps());
+}
+
+TEST(execute_call, call_imported_max_depth_recursion)
+{
+    /* wat2wasm
+    (import "mod" "foo" (func (result i32)))
+    */
+    const auto wasm = from_hex("0061736d010000000105016000017f020b01036d6f6403666f6f0000");
+
+    const auto module = parse(wasm);
+    auto host_foo = [](Instance& instance, span<const Value>, int depth) -> ExecutionResult {
+        if (depth == MaxDepth)
+            return Value{uint32_t{1}};  // Terminate recursion on the max depth.
+        return execute(instance, 0, {}, depth + 1);
+    };
+    const auto host_foo_type = module.typesec[0];
+
+    auto instance = instantiate(module, {{host_foo, host_foo_type}});
+
+    EXPECT_THAT(execute(*instance, 0, {}), Result(uint32_t{1}));
 }
 
 TEST(execute_call, call_indirect_imported_table_infinite_recursion)
