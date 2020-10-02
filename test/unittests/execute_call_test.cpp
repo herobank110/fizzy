@@ -503,7 +503,7 @@ TEST(execute_call, call_nonempty_stack)
     EXPECT_THAT(execute(*instance, 1, {}), Result(3));
 }
 
-constexpr int MaxDepth = 2048;
+constexpr int MaxDepth = 2048 + 1;
 
 TEST(execute_call, call_imported_infinite_recursion)
 {
@@ -515,7 +515,7 @@ TEST(execute_call, call_imported_infinite_recursion)
     const auto module = parse(wasm);
     auto host_foo = [](Instance& instance, span<const Value>, int depth) -> ExecutionResult {
         EXPECT_LE(depth, MaxDepth);
-        return execute(instance, 0, {}, depth + 1);
+        return execute(instance, 0, {}, depth);
     };
     const auto host_foo_type = module.typesec[0];
 
