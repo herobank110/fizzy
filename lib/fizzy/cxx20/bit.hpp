@@ -45,6 +45,26 @@ constexpr int popcount(uint64_t x) noexcept
 {
     return std::popcount(x);
 }
+
+constexpr int countl_zero(uint32_t value) noexcept
+{
+    return std::countl_zero(value);
+}
+
+constexpr int countl_zero(uint64_t value) noexcept
+{
+    return std::countl_zero(value);
+}
+
+constexpr int countr_zero(uint32_t value) noexcept
+{
+    return std::countr_zero(value);
+}
+
+constexpr int countr_zero(uint64_t value) noexcept
+{
+    return std::countr_zero(value);
+}
 }  // namespace fizzy
 
 #else
@@ -61,6 +81,34 @@ constexpr int popcount(uint64_t x) noexcept
 {
     static_assert(sizeof(x) == sizeof(unsigned long long));
     return __builtin_popcountll(x);
+}
+
+constexpr int countl_zero(uint32_t value) noexcept
+{
+    if (value == 0)
+        return 32;
+    return __builtin_clz(value);
+}
+
+constexpr int countl_zero(uint64_t value) noexcept
+{
+    if (value == 0)
+        return 64;
+    return __builtin_clzll(value);
+}
+
+constexpr int countr_zero(uint32_t value) noexcept
+{
+    if (value == 0)
+        return 32;
+    return __builtin_ctz(value);
+}
+
+constexpr int countr_zero(uint64_t value) noexcept
+{
+    if (value == 0)
+        return 64;
+    return __builtin_ctzll(value);
 }
 }  // namespace fizzy
 
